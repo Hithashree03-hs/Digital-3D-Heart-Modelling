@@ -1,0 +1,33 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Generated outputs
+outputs/
+uploads/
+
+# Node
+node_modules/
+website/node_modules/
+website/dist/
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large medical dataset
+dataset/
+# Trained model checkpoints
+*.pth
+
+# Generated test slices
+test_image_slices/

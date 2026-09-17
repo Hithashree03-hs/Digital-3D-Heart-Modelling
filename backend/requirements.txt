@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+numpy
+nibabel
+torch
+scikit-image
+trimesh
+pyglet<2

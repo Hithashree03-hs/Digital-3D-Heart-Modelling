@@ -1,0 +1,22 @@
+=============================================
+HEART ABNORMALITY ANALYSIS
+=============================================
+
+Left Ventricle
+-------------------------
+Volume : 23.33 mL
+Status : Normal
+
+Right Ventricle
+-------------------------
+Volume : 13.40 mL
+Status : Normal
+
+Myocardium
+-------------------------
+Volume : 11.11 mL
+Status : Normal
+
+Overall Assessment
+-------------------------
+No significant abnormality detected.
