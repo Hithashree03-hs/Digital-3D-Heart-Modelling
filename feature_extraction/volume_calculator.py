@@ -18,36 +18,19 @@ LABELS = {
 }
 
 
-# ==========================================================
-# Calculate Volumes
-# ==========================================================
-
 def calculate_volumes(volume_path):
-
     """
     Calculate physical volume of each HVSMR cardiac structure.
 
-    Parameters
-    ----------
-    volume_path : str
-        Path to predicted segmentation NIfTI file.
-
-    Returns
-    -------
-    dict
-        Volume measurements for each cardiac structure.
+    volume_path can belong to ANY selected patient.
+    The patient ID is not hardcoded here.
     """
 
     print("\nLoading segmentation:")
     print(volume_path)
 
     nii = nib.load(volume_path)
-
     volume = nii.get_fdata()
-
-    # ------------------------------------------------------
-    # Get physical voxel spacing
-    # ------------------------------------------------------
 
     spacing = nii.header.get_zooms()[:3]
 
@@ -70,77 +53,47 @@ def calculate_volumes(volume_path):
 
     results = {}
 
-    # ------------------------------------------------------
-    # Calculate volume for each structure
-    # ------------------------------------------------------
-
     for label, name in LABELS.items():
 
-        voxel_count = int(
-            np.sum(volume == label)
-        )
+        voxel_count = int(np.sum(volume == label))
 
-        volume_mm3 = (
-            voxel_count
-            * voxel_volume_mm3
-        )
-
+        volume_mm3 = voxel_count * voxel_volume_mm3
         volume_ml = volume_mm3 / 1000.0
 
         results[name] = {
-
             "label": label,
-
             "voxels": voxel_count,
-
-            "volume_mm3": float(
-                volume_mm3
-            ),
-
-            "volume_ml": float(
-                volume_ml
-            )
-
+            "volume_mm3": float(volume_mm3),
+            "volume_ml": float(volume_ml),
         }
 
     return results
 
 
-# ==========================================================
-# Standalone Testing
-# ==========================================================
-
 if __name__ == "__main__":
 
-    volume_path = (
-        "../outputs/hvsmr/pat7/"
-        "predicted_segmentation.nii.gz"
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Calculate HVSMR cardiac volumes for a selected patient."
     )
 
-    features = calculate_volumes(
-        volume_path
+    parser.add_argument(
+        "segmentation",
+        help="Path to the patient's predicted_segmentation.nii.gz"
     )
 
-    print(
-        "\n========== HVSMR VOLUME REPORT ==========\n"
-    )
+    args = parser.parse_args()
+
+    features = calculate_volumes(args.segmentation)
+
+    print("\n========== HVSMR VOLUME REPORT ==========\n")
 
     for structure, values in features.items():
 
         print(structure)
-
-        print(
-            f"Voxel Count : {values['voxels']:,}"
-        )
-
-        print(
-            f"Volume      : "
-            f"{values['volume_mm3']:.2f} mm³"
-        )
-
-        print(
-            f"Volume      : "
-            f"{values['volume_ml']:.2f} mL"
-        )
-
+        print(f"Voxel Count : {values['voxels']:,}")
+        print(f"Volume      : {values['volume_mm3']:.2f} mm³")
+        print(f"Volume      : {values['volume_ml']:.2f} mL")
         print()
+

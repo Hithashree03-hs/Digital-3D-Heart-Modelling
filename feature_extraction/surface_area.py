@@ -7,23 +7,18 @@ import numpy as np
 # ==========================================================
 
 STRUCTURES = {
-    "Left Ventricle": "pat7_lv.npz",
-    "Right Ventricle": "pat7_rv.npz",
-    "Left Atrium": "pat7_la.npz",
-    "Right Atrium": "pat7_ra.npz",
-    "Aorta": "pat7_aorta.npz",
-    "Pulmonary Artery": "pat7_pulmonary_artery.npz",
-    "Superior Vena Cava": "pat7_svc.npz",
-    "Inferior Vena Cava": "pat7_ivc.npz",
+    "Left Ventricle": "lv",
+    "Right Ventricle": "rv",
+    "Left Atrium": "la",
+    "Right Atrium": "ra",
+    "Aorta": "aorta",
+    "Pulmonary Artery": "pulmonary_artery",
+    "Superior Vena Cava": "svc",
+    "Inferior Vena Cava": "ivc",
 }
 
 
-# ==========================================================
-# Triangle Area
-# ==========================================================
-
 def triangle_area(v1, v2, v3):
-
     """
     Calculate triangle area using the cross product.
     """
@@ -31,113 +26,110 @@ def triangle_area(v1, v2, v3):
     return 0.5 * np.linalg.norm(
         np.cross(
             v2 - v1,
-            v3 - v1
+            v3 - v1,
         )
     )
 
 
-# ==========================================================
-# Surface Area Calculation
-# ==========================================================
-
-def calculate_surface_area(
-    output_folder="outputs/hvsmr/pat7"
-):
-
+def calculate_surface_area(output_folder, patient):
     """
-    Calculate surface area of each reconstructed
-    cardiac structure.
+    Calculate surface area for the selected patient.
 
-    Mesh coordinates are in millimetres, therefore
-    surface area is returned in mm².
+    Expected files:
+        <patient>_lv.npz
+        <patient>_rv.npz
+        ...
+        <patient>_ivc.npz
+
+    No patient number is hardcoded.
     """
+
+    if not patient:
+        raise ValueError("Patient ID is required.")
 
     results = {}
 
-    for name, filename in STRUCTURES.items():
+    for name, suffix in STRUCTURES.items():
 
-        mesh_file = os.path.join(
-            output_folder,
-            filename
-        )
+        filename = f"{patient}_{suffix}.npz"
+        mesh_file = os.path.join(output_folder, filename)
 
-        print(
-            f"\nProcessing {name}..."
-        )
+        print(f"\nProcessing {name}...")
 
         if not os.path.exists(mesh_file):
 
-            print(
-                "Mesh not found:"
-            )
-
-            print(
-                mesh_file
-            )
+            print("Mesh not found:")
+            print(mesh_file)
 
             continue
 
-        data = np.load(
-            mesh_file
-        )
+        data = np.load(mesh_file)
+
+        if "vertices" not in data or "faces" not in data:
+            print("NPZ must contain 'vertices' and 'faces', skipping:")
+            print(mesh_file)
+            continue
 
         vertices = data["vertices"]
-
         faces = data["faces"]
 
         total_area = 0.0
 
-        # --------------------------------------------------
-        # Calculate area of every triangular face
-        # --------------------------------------------------
-
         for face in faces:
 
-            v1 = vertices[
-                face[0]
-            ]
+            v1 = vertices[face[0]]
+            v2 = vertices[face[1]]
+            v3 = vertices[face[2]]
 
-            v2 = vertices[
-                face[1]
-            ]
+            total_area += triangle_area(v1, v2, v3)
 
-            v3 = vertices[
-                face[2]
-            ]
-
-            total_area += triangle_area(
-                v1,
-                v2,
-                v3
-            )
-
-        results[name] = float(
-            total_area
-        )
+        results[name] = float(total_area)
 
         print(
-            f"Surface Area: "
-            f"{total_area:.2f} mm²"
+            f"Surface Area: {total_area:.2f} mm²"
         )
 
     return results
 
 
-# ==========================================================
-# Standalone Testing
-# ==========================================================
-
 if __name__ == "__main__":
 
-    surface_areas = calculate_surface_area()
+    import argparse
 
-    print(
-        "\n========== SURFACE AREA REPORT ==========\n"
+    parser = argparse.ArgumentParser(
+        description="Calculate cardiac surface areas."
     )
+
+    parser.add_argument(
+        "patient",
+        help="Patient ID, for example pat7, pat9, pat15"
+    )
+
+    parser.add_argument(
+        "--output-folder",
+        default=None,
+        help="Patient mesh folder. Defaults to outputs/hvsmr/<patient>."
+    )
+
+    args = parser.parse_args()
+
+    if args.output_folder is None:
+        args.output_folder = os.path.join(
+            "outputs",
+            "hvsmr",
+            args.patient,
+        )
+
+    surface_areas = calculate_surface_area(
+        args.output_folder,
+        args.patient,
+    )
+
+    print("\n========== SURFACE AREA REPORT ==========\n")
 
     for structure, area in surface_areas.items():
 
         print(
-            f"{structure}: "
-            f"{area:.2f} mm²"
+            f"{structure}: {area:.2f} mm²"
         )
+

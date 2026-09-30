@@ -1,4 +1,5 @@
 import React, {
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -6,9 +7,9 @@ import React, {
 import Heart3DViewer from "./Heart3DViewer";
 
 import "./App.css";
+import "./digitalHeartTheme.css";
 
-const API_BASE =
-  "http://127.0.0.1:8000";
+const API_BASE = "http://127.0.0.1:8000";
 
 const STRUCTURE_NAMES = [
   "Left Ventricle",
@@ -22,49 +23,35 @@ const STRUCTURE_NAMES = [
 ];
 
 const STRUCTURE_KEYS = {
-  "Left Ventricle":
-    "left_ventricle",
-  "Right Ventricle":
-    "right_ventricle",
-  "Left Atrium":
-    "left_atrium",
-  "Right Atrium":
-    "right_atrium",
+  "Left Ventricle": "left_ventricle",
+  "Right Ventricle": "right_ventricle",
+  "Left Atrium": "left_atrium",
+  "Right Atrium": "right_atrium",
   Aorta: "aorta",
-  "Pulmonary Artery":
-    "pulmonary_artery",
-  "Superior Vena Cava":
-    "superior_vena_cava",
-  "Inferior Vena Cava":
-    "inferior_vena_cava",
+  "Pulmonary Artery": "pulmonary_artery",
+  "Superior Vena Cava": "superior_vena_cava",
+  "Inferior Vena Cava": "inferior_vena_cava",
 };
 
 function getFileNameFromPath(path) {
   if (!path) return "";
 
-  const normalized =
-    String(path).replaceAll("\\", "/");
+  const normalized = String(path).replaceAll("\\", "/");
 
   return normalized.split("/").pop();
 }
 
-function getModelUrl(
-  patientId,
-  model
-) {
+function getModelUrl(patientId, model) {
   if (!model) return "";
 
   if (typeof model === "string") {
-    const filename =
-      getFileNameFromPath(model);
+    const filename = getFileNameFromPath(model);
 
     if (!filename) return "";
 
     return `${API_BASE}/models/${encodeURIComponent(
       patientId
-    )}/${encodeURIComponent(
-      filename
-    )}`;
+    )}/${encodeURIComponent(filename)}`;
   }
 
   if (model.url) {
@@ -74,34 +61,25 @@ function getModelUrl(
   }
 
   if (model.file_url) {
-    return model.file_url.startsWith(
-      "http"
-    )
+    return model.file_url.startsWith("http")
       ? model.file_url
       : `${API_BASE}${model.file_url}`;
   }
 
   if (model.path) {
-    const filename =
-      getFileNameFromPath(
-        model.path
-      );
+    const filename = getFileNameFromPath(model.path);
 
     if (!filename) return "";
 
     return `${API_BASE}/models/${encodeURIComponent(
       patientId
-    )}/${encodeURIComponent(
-      filename
-    )}`;
+    )}/${encodeURIComponent(filename)}`;
   }
 
   if (model.filename) {
     return `${API_BASE}/models/${encodeURIComponent(
       patientId
-    )}/${encodeURIComponent(
-      model.filename
-    )}`;
+    )}/${encodeURIComponent(model.filename)}`;
   }
 
   return "";
@@ -136,8 +114,13 @@ function getFeatureName(feature) {
   );
 }
 
+/*
+ * Backend abnormality_analysis.py returns
+ * the patient measurement as "patient_value".
+ */
 function getFeatureValue(feature) {
   return (
+    feature?.patient_value ??
     feature?.measured ??
     feature?.value ??
     feature?.measurement ??
@@ -146,7 +129,25 @@ function getFeatureValue(feature) {
   );
 }
 
+/*
+ * Backend returns:
+ * reference_lower
+ * reference_upper
+ *
+ * Convert them into an object that the
+ * formatting function can display.
+ */
 function getFeatureReference(feature) {
+  if (
+    feature?.reference_lower !== undefined &&
+    feature?.reference_upper !== undefined
+  ) {
+    return {
+      min: feature.reference_lower,
+      max: feature.reference_upper,
+    };
+  }
+
   return (
     feature?.reference ??
     feature?.reference_range ??
@@ -155,18 +156,26 @@ function getFeatureReference(feature) {
   );
 }
 
+/*
+ * Backend returns "severity":
+ * Normal range
+ * Mild deviation
+ * Marked deviation
+ */
 function getFeatureAssessment(feature) {
   return (
+    feature?.severity ||
     feature?.assessment ||
     feature?.status ||
     feature?.classification ||
     feature?.deviation ||
-    "Within reference range"
+    "Assessment unavailable"
   );
 }
 
 function getNumericFeatureValue(feature) {
   const value =
+    feature?.patient_value ??
     feature?.measured ??
     feature?.value ??
     feature?.measurement ??
@@ -175,7 +184,11 @@ function getNumericFeatureValue(feature) {
     feature?.actual ??
     null;
 
-  if (value !== null && value !== undefined && value !== "") {
+  if (
+    value !== null &&
+    value !== undefined &&
+    value !== ""
+  ) {
     return value;
   }
 
@@ -186,88 +199,25 @@ function getNumericFeatureValue(feature) {
   return null;
 }
 
+/*
+ * Display the actual reference interval
+ * calculated by the backend.
+ *
+ * Example:
+ * 62.40 – 128.70
+ */
 function formatReference(reference, feature) {
-  if (reference === null || reference === undefined || reference === "") {
-    const min =
-      feature?.reference_min ??
-      feature?.reference_low ??
-      feature?.normal_min ??
-      feature?.min ??
-      feature?.lower_bound ??
-      null;
-
-    const max =
-      feature?.reference_max ??
-      feature?.reference_high ??
-      feature?.normal_max ??
-      feature?.max ??
-      feature?.upper_bound ??
-      null;
-
-    if (min !== null && max !== null) {
-      return `${formatNumber(min)} – ${formatNumber(max)}`;
-    }
-
-    if (min !== null) {
-      return `≥ ${formatNumber(min)}`;
-    }
-
-    if (max !== null) {
-      return `≤ ${formatNumber(max)}`;
-    }
-
-    return "—";
+  if (
+    reference &&
+    reference.min !== undefined &&
+    reference.max !== undefined
+  ) {
+    return `${formatNumber(
+      reference.min
+    )} – ${formatNumber(reference.max)}`;
   }
 
-  if (typeof reference === "number") {
-    return formatNumber(reference);
-  }
-
-  if (Array.isArray(reference)) {
-    if (reference.length >= 2) {
-      return `${formatNumber(reference[0])} – ${formatNumber(reference[1])}`;
-    }
-    return reference.join(" – ");
-  }
-
-  if (typeof reference === "object") {
-    const min =
-      reference.min ??
-      reference.low ??
-      reference.lower ??
-      reference.lower_bound ??
-      reference.reference_min ??
-      null;
-
-    const max =
-      reference.max ??
-      reference.high ??
-      reference.upper ??
-      reference.upper_bound ??
-      reference.reference_max ??
-      null;
-
-    if (min !== null && max !== null) {
-      return `${formatNumber(min)} – ${formatNumber(max)}`;
-    }
-
-    if (min !== null) {
-      return `≥ ${formatNumber(min)}`;
-    }
-
-    if (max !== null) {
-      return `≤ ${formatNumber(max)}`;
-    }
-
-    return (
-      reference.range ||
-      reference.label ||
-      reference.text ||
-      "—"
-    );
-  }
-
-  return String(reference);
+  return "—";
 }
 
 function normalizeFeatureText(value) {
@@ -276,8 +226,14 @@ function normalizeFeatureText(value) {
     .replace(/[^a-z0-9]+/g, "");
 }
 
-function findMeasuredFromCardiacRows(feature, rows) {
-  const featureName = normalizeFeatureText(getFeatureName(feature));
+function findMeasuredFromCardiacRows(
+  feature,
+  rows
+) {
+  const featureName =
+    normalizeFeatureText(
+      getFeatureName(feature)
+    );
 
   if (!featureName) {
     return null;
@@ -292,21 +248,29 @@ function findMeasuredFromCardiacRows(feature, rows) {
     ["pulmonaryarteryvolume", 5, "volume"],
     ["superiorvenacavavolume", 6, "volume"],
     ["inferiorvenacavavolume", 7, "volume"],
+
     ["leftventriclelength", 0, "length"],
     ["leftventriclewidth", 0, "width"],
     ["leftventricledepth", 0, "depth"],
+
     ["rightventriclelength", 1, "length"],
     ["rightventriclewidth", 1, "width"],
     ["rightventricledepth", 1, "depth"],
+
     ["leftatriumlength", 2, "length"],
     ["leftatriumwidth", 2, "width"],
     ["leftatriumdepth", 2, "depth"],
+
     ["rightatriumlength", 3, "length"],
     ["rightatriumwidth", 3, "width"],
     ["rightatriumdepth", 3, "depth"],
   ];
 
-  for (const [key, rowIndex, field] of matches) {
+  for (const [
+    key,
+    rowIndex,
+    field,
+  ] of matches) {
     if (featureName.includes(key)) {
       return rows[rowIndex]?.[field] ?? null;
     }
@@ -316,7 +280,6 @@ function findMeasuredFromCardiacRows(feature, rows) {
 }
 
 export default function App() {
-
   // ---------------------------------------------------------
   // STATE
   // ---------------------------------------------------------
@@ -353,15 +316,12 @@ export default function App() {
   const handleFileChange = (
     event
   ) => {
-
     const files = Array.from(
       event.target.files || []
     );
 
     setSelectedFiles(files);
-
     setError("");
-
     setResult(null);
   };
 
@@ -370,28 +330,24 @@ export default function App() {
   // ---------------------------------------------------------
 
   const handleAnalyze = async () => {
-
     if (selectedFiles.length === 0) {
       setError(
-        "Please select an MRI file first."
+        inputType === "volume"
+          ? "Please select an MRI volume first."
+          : "Please select MRI slices first."
       );
-
       return;
     }
 
     setLoading(true);
-
     setError("");
-
     setResult(null);
 
     try {
-
       const formData =
         new FormData();
 
       if (inputType === "volume") {
-
         formData.append(
           "file",
           selectedFiles[0]
@@ -407,7 +363,6 @@ export default function App() {
           );
 
         if (!response.ok) {
-
           const text =
             await response.text();
 
@@ -421,9 +376,7 @@ export default function App() {
           await response.json();
 
         setResult(data);
-
       } else {
-
         selectedFiles.forEach(
           (file) => {
             formData.append(
@@ -443,7 +396,6 @@ export default function App() {
           );
 
         if (!response.ok) {
-
           const text =
             await response.text();
 
@@ -458,30 +410,23 @@ export default function App() {
 
         setResult(data);
       }
-
     } catch (err) {
-
       console.error(err);
 
       if (
         err.message ===
         "Failed to fetch"
       ) {
-
         setError(
           "Failed to connect to the backend. Make sure the FastAPI server is running at http://127.0.0.1:8000."
         );
-
       } else {
-
         setError(
           err.message ||
             "Analysis failed."
         );
       }
-
     } finally {
-
       setLoading(false);
     }
   };
@@ -506,6 +451,14 @@ export default function App() {
     result?.abnormality_analysis ||
     {};
 
+  /*
+   * Septal defect screening added
+   * by backend/services/septal_defect.py
+   */
+  const septalDefect =
+    result?.septal_defect_screening ||
+    null;
+
   const reconstruction =
     result?.["3d_reconstruction"] ||
     {};
@@ -523,9 +476,12 @@ export default function App() {
     segmentation?.voxel_spacing ||
     result?.voxel_spacing_mm ||
     result?.voxel_spacing ||
-    result?.preprocessing?.voxel_spacing_mm ||
-    result?.metadata?.voxel_spacing_mm ||
-    result?.input_mri?.voxel_spacing_mm ||
+    result?.preprocessing
+      ?.voxel_spacing_mm ||
+    result?.metadata
+      ?.voxel_spacing_mm ||
+    result?.input_mri
+      ?.voxel_spacing_mm ||
     null;
 
   const voxelSpacingText =
@@ -570,7 +526,6 @@ export default function App() {
   const cardiacRows =
     STRUCTURE_NAMES.map(
       (name) => {
-
         const key =
           STRUCTURE_KEYS[name];
 
@@ -620,26 +575,36 @@ export default function App() {
   // ---------------------------------------------------------
 
   const lvVolume =
-    featureExtraction?.left_ventricle_volume_ml ??
-    featureExtraction?.left_ventricle?.volume_ml ??
+    featureExtraction
+      ?.left_ventricle_volume_ml ??
+    featureExtraction
+      ?.left_ventricle
+      ?.volume_ml ??
     cardiacRows[0]?.volume;
 
   const rvVolume =
-    featureExtraction?.right_ventricle_volume_ml ??
-    featureExtraction?.right_ventricle?.volume_ml ??
+    featureExtraction
+      ?.right_ventricle_volume_ml ??
+    featureExtraction
+      ?.right_ventricle
+      ?.volume_ml ??
     cardiacRows[1]?.volume;
 
   const lvRvRatio =
-    featureExtraction?.lv_rv_volume_ratio ??
-    featureExtraction?.lv_rv_ratio ??
+    featureExtraction
+      ?.lv_rv_volume_ratio ??
+    featureExtraction
+      ?.lv_rv_ratio ??
     (lvVolume && rvVolume
       ? Number(lvVolume) /
         Number(rvVolume)
       : null);
 
   const lvRvDifference =
-    featureExtraction?.lv_rv_volume_difference_percent ??
-    featureExtraction?.lv_rv_difference_percent ??
+    featureExtraction
+      ?.lv_rv_volume_difference_percent ??
+    featureExtraction
+      ?.lv_rv_difference_percent ??
     null;
 
   // ---------------------------------------------------------
@@ -654,13 +619,17 @@ export default function App() {
       : [];
 
   const mildDeviations =
-    abnormality?.mild_deviations ??
-    abnormality?.mildDeviations ??
+    abnormality
+      ?.mild_deviations ??
+    abnormality
+      ?.mildDeviations ??
     0;
 
   const markedDeviations =
-    abnormality?.marked_deviations ??
-    abnormality?.markedDeviations ??
+    abnormality
+      ?.marked_deviations ??
+    abnormality
+      ?.markedDeviations ??
     0;
 
   const normalCount = Math.max(
@@ -671,8 +640,10 @@ export default function App() {
   );
 
   const backendOverallAssessment =
-    abnormality?.overall_assessment ||
-    abnormality?.overallAssessment ||
+    abnormality
+      ?.overall_assessment ||
+    abnormality
+      ?.overallAssessment ||
     "";
 
   const overallAssessment =
@@ -689,134 +660,119 @@ export default function App() {
   // 3D MODELS
   // ---------------------------------------------------------
 
-const heartModels =
-  useMemo(() => {
+  const heartModels =
+    useMemo(() => {
+      const raw =
+        reconstruction
+          ?.individual_models ||
+        reconstruction
+          ?.individualModels ||
+        reconstruction
+          ?.models ||
+        [];
 
-    const raw =
-      reconstruction?.individual_models ||
-      reconstruction?.individualModels ||
-      reconstruction?.models ||
-      [];
+      if (!Array.isArray(raw)) {
+        return [];
+      }
 
-    if (!Array.isArray(raw)) {
-      return [];
-    }
+      return raw
+        .map((model) => {
+          const originalPath =
+            typeof model === "string"
+              ? model
+              : model?.filename ||
+                model?.url ||
+                model?.model_url ||
+                model?.path ||
+                "";
 
-    return raw
-      .map((model) => {
+          if (!originalPath) {
+            return null;
+          }
 
-        /*
-         * Get the original filename/path returned
-         * by the backend.
-         */
-        const originalPath =
-          typeof model === "string"
-            ? model
-            : model?.filename ||
-              model?.url ||
-              model?.model_url ||
-              model?.path ||
-              "";
+          const filename =
+            getFileNameFromPath(
+              originalPath
+            );
 
-        if (!originalPath) {
-          return null;
-        }
-
-        /*
-         * Extract only the filename.
-         */
-        const filename =
-          getFileNameFromPath(
-            originalPath
-          );
-
-        /*
-         * IMPORTANT:
-         * The backend generates STL models.
-         *
-         * Always request the STL version instead
-         * of accidentally sending a PLY file to
-         * the Three.js STL loader.
-         */
-        const stlFilename =
-          filename
-            .replace(
+          /*
+           * Backend generates STL models.
+           */
+          const stlFilename =
+            filename.replace(
               /\.(ply|obj|glb|gltf|stl)$/i,
               ""
             ) + ".stl";
 
-        /*
-         * Identify the cardiac structure.
-         */
-        const lowerName =
-          filename.toLowerCase();
+          const lowerName =
+            filename.toLowerCase();
 
-        const structureName =
-          STRUCTURE_NAMES.find(
-            (name) =>
-              lowerName.includes(
-                name
-                  .toLowerCase()
-                  .replaceAll(
-                    " ",
-                    "_"
-                  )
-              )
-          ) ||
-          (typeof model === "object"
-            ? model.name ||
-              model.structure ||
-              model.label
-            : null) ||
-          filename;
+          const structureName =
+            STRUCTURE_NAMES.find(
+              (name) =>
+                lowerName.includes(
+                  name
+                    .toLowerCase()
+                    .replaceAll(
+                      " ",
+                      "_"
+                    )
+                )
+            ) ||
+            (typeof model ===
+            "object"
+              ? model.name ||
+                model.structure ||
+                model.label
+              : null) ||
+            filename;
 
-        /*
-         * Directly use the backend's model-serving
-         * endpoint with the STL filename.
-         */
-        const stlUrl =
-          `http://127.0.0.1:8000/models/${encodeURIComponent(
-            patientId
-          )}/${encodeURIComponent(
-            stlFilename
-          )}`;
+          const stlUrl =
+            `${API_BASE}/models/${encodeURIComponent(
+              patientId
+            )}/${encodeURIComponent(
+              stlFilename
+            )}`;
 
-        return {
-          ...(typeof model === "object"
-            ? model
-            : {}),
+          return {
+            ...(typeof model ===
+            "object"
+              ? model
+              : {}),
 
-          name:
-            structureName,
+            name:
+              structureName,
 
-          filename:
-            stlFilename,
+            filename:
+              stlFilename,
 
-          url:
-            stlUrl,
-        };
+            url:
+              stlUrl,
+          };
+        })
+        .filter(
+          (model) =>
+            model &&
+            model.url
+        );
+    }, [
+      reconstruction,
+      patientId,
+    ]);
 
-      })
-      .filter(
-        (model) =>
-          model &&
-          model.url
-      );
-
-  }, [
-    reconstruction,
-    patientId,
-  ]);
   // ---------------------------------------------------------
   // MODEL COUNT
   // ---------------------------------------------------------
 
   const generatedModelCount =
-    reconstruction?.individual_models
+    reconstruction
+      ?.individual_models
       ?.length ||
-    reconstruction?.individualModels
+    reconstruction
+      ?.individualModels
       ?.length ||
-    reconstruction?.models
+    reconstruction
+      ?.models
       ?.length ||
     heartModels.length;
 
@@ -870,7 +826,35 @@ const heartModels =
 
       <main>
 
-        <section className="hero-section">
+        
+        <section className="dh-hero">
+          <div className="dh-hero-glow dh-hero-glow-one" />
+          <div className="dh-hero-glow dh-hero-glow-two" />
+
+          <div className="dh-hero-content">
+            <div className="dh-eyebrow">
+              <span className="dh-pulse-dot" />
+              PATIENT-SPECIFIC CARDIAC VISUALIZATION
+            </div>
+
+            <h1 className="dh-title">
+              Digital <span>3D Heart</span>
+            </h1>
+
+            <p className="dh-subtitle">
+              Interactive reconstruction and abnormality analysis from
+              segmented cardiac MRI.
+            </p>
+
+            <div className="dh-hero-pills">
+              <span>3D Reconstruction</span>
+              <span>MRI Analysis</span>
+              <span>Defect Screening</span>
+            </div>
+          </div>
+        </section>
+
+<section className="hero-section">
 
           <div className="section-number">
             01
@@ -906,6 +890,7 @@ const heartModels =
               }
             >
               3D MRI Volume
+
               <span>
                 NIfTI (.nii / .nii.gz)
               </span>
@@ -922,6 +907,7 @@ const heartModels =
               }
             >
               Individual MRI Slices
+
               <span>
                 Image slices
               </span>
@@ -1008,11 +994,9 @@ const heartModels =
             }
             disabled={loading}
           >
-
             {loading
               ? "Analyzing MRI..."
               : "Analyze MRI"}
-
           </button>
 
         </section>
@@ -1074,16 +1058,18 @@ const heartModels =
 
               <p>
                 Automated processing of
-                the uploaded cardiac MRI.
+                the selected cardiac MRI.
               </p>
 
               <div className="pipeline-grid">
 
                 <div className="pipeline-card">
                   <span>01</span>
+
                   <strong>
                     Preprocessing
                   </strong>
+
                   <small>
                     Completed
                   </small>
@@ -1091,9 +1077,11 @@ const heartModels =
 
                 <div className="pipeline-card">
                   <span>02</span>
+
                   <strong>
                     U-Net Segmentation
                   </strong>
+
                   <small>
                     Completed
                   </small>
@@ -1101,9 +1089,11 @@ const heartModels =
 
                 <div className="pipeline-card">
                   <span>03</span>
+
                   <strong>
                     3D Reconstruction
                   </strong>
+
                   <small>
                     Completed
                   </small>
@@ -1111,9 +1101,11 @@ const heartModels =
 
                 <div className="pipeline-card">
                   <span>04</span>
+
                   <strong>
                     Cardiac Analysis
                   </strong>
+
                   <small>
                     Completed
                   </small>
@@ -1213,6 +1205,7 @@ const heartModels =
                   <thead>
 
                     <tr>
+
                       <th>
                         Structure
                       </th>
@@ -1232,6 +1225,7 @@ const heartModels =
                       <th>
                         Depth (mm)
                       </th>
+
                     </tr>
 
                   </thead>
@@ -1377,13 +1371,106 @@ const heartModels =
             </section>
 
             {/* =============================================
-                ABNORMALITY ANALYSIS
+                SEPTAL DEFECT SCREENING
+            ============================================= */}
+
+            <section className="septal-defect-section">
+
+              <div className="section-number">
+                06
+              </div>
+
+              <h2>
+                Septal Defect Screening
+              </h2>
+
+              <p>
+                Automated MRI-based screening
+                for ventricular and atrial
+                septal defects.
+              </p>
+
+              {septalDefect ? (
+
+                <div className="septal-defect-card">
+
+                  <div className="septal-defect-grid">
+
+                    <div className="septal-defect-item">
+
+                      <span>
+                        Ventricular Septal Defect
+                      </span>
+
+                      <strong>
+                        {septalDefect?.vsd?.detected === true
+                          ? "VSD defect suspected"
+                          : septalDefect?.vsd?.detected === false
+                          ? "No VSD defect"
+                          : "Result unavailable"}
+                      </strong>
+
+                    </div>
+
+                    <div className="septal-defect-item">
+
+                      <span>
+                        Atrial Septal Defect
+                      </span>
+
+                      <strong>
+                        {septalDefect?.asd?.detected === true
+                          ? "ASD defect suspected"
+                          : septalDefect?.asd?.detected === false
+                          ? "No ASD defect"
+                          : "Result unavailable"}
+                      </strong>
+
+                    </div>
+
+                  </div>
+
+                  <div className="septal-defect-overall">
+
+                    <span>
+                      Overall Screening Result
+                    </span>
+
+                    <strong>
+                      {
+                        septalDefect
+                          ?.overall ||
+                        "Result unavailable"
+                      }
+                    </strong>
+
+                  </div>
+
+                  
+
+                </div>
+
+              ) : (
+
+                <div className="septal-defect-card unavailable">
+
+                  Septal defect screening
+                  result is unavailable.
+
+                </div>
+
+              )}
+
+            </section>
+
+            {/* =============================================
+                MORPHOLOGICAL ABNORMALITY ANALYSIS
             ============================================= */}
 
             <section className="abnormality-section">
 
               <div className="section-number">
-                06
+                07
               </div>
 
               <h2>
@@ -1525,6 +1612,11 @@ const heartModels =
                               feature
                             );
 
+                          const assessmentLower =
+                            String(
+                              assessment
+                            ).toLowerCase();
+
                           return (
                             <tr
                               key={
@@ -1560,17 +1652,13 @@ const heartModels =
 
                                 <span
                                   className={
-                                    assessment
-                                      .toLowerCase()
-                                      .includes(
-                                        "marked"
-                                      )
+                                    assessmentLower.includes(
+                                      "marked"
+                                    )
                                       ? "assessment marked"
-                                      : assessment
-                                          .toLowerCase()
-                                          .includes(
-                                            "mild"
-                                          )
+                                      : assessmentLower.includes(
+                                          "mild"
+                                        )
                                       ? "assessment mild"
                                       : "assessment normal"
                                   }
@@ -1592,18 +1680,7 @@ const heartModels =
                 </div>
 
               )}
-
-              <div className="medical-note">
-
-                This abnormality analysis is
-                a morphological screening
-                feature based on extracted
-                measurements. It is not a
-                clinical diagnosis.
-
-              </div>
-
-            </section>
+</section>
 
             {/* =============================================
                 3D HEART
@@ -1612,7 +1689,7 @@ const heartModels =
             <section className="heart-section">
 
               <div className="section-number">
-                07
+                08
               </div>
 
               <h2>
@@ -1654,52 +1731,51 @@ const heartModels =
                   {Number(
                     markedDeviations
                   ) > 0 ? (
+
                     <>
                       <strong>
                         Marked morphological
                         deviation detected
                       </strong>
+
                       {" "}
                       in the current
                       screening.
                     </>
+
                   ) : Number(
                       mildDeviations
                     ) > 0 ? (
+
                     <>
                       <strong>
                         Mild morphological
                         deviation detected
                       </strong>
+
                       {" "}
                       in the current
                       screening.
                     </>
+
                   ) : (
+
                     <>
                       <strong>
                         No morphological
                         deviation detected
                       </strong>
+
                       {" "}
                       in the current
                       screening.
                     </>
+
                   )}
 
                 </div>
 
               )}
-
-              <div className="viewer-description">
-
-                Interactive patient-specific
-                3D heart reconstructed from
-                segmented cardiac MRI.
-                Click a structure below to
-                show or hide it.
-
-              </div>
 
               <Heart3DViewer
                 models={
@@ -1708,85 +1784,13 @@ const heartModels =
                 patientId={
                   patientId
                 }
+                septalDefect={
+                  septalDefect
+                }
+                reconstruction={
+                  reconstruction
+                }
               />
-
-            </section>
-
-            {/* =============================================
-                LIMITATIONS
-            ============================================= */}
-
-            <section className="limitations-section">
-
-              <div className="section-number">
-                08
-              </div>
-
-              <h2>
-                Analysis Limitations
-              </h2>
-
-              <p>
-                Important considerations
-                for interpretation.
-              </p>
-
-              <ul>
-
-                {limitations.length >
-                0 ? (
-
-                  limitations.map(
-                    (
-                      item,
-                      index
-                    ) => (
-
-                      <li
-                        key={
-                          index
-                        }
-                      >
-                        {typeof item ===
-                        "string"
-                          ? item
-                          : item.text ||
-                            item.message ||
-                            JSON.stringify(
-                              item
-                            )}
-                      </li>
-
-                    )
-                  )
-
-                ) : (
-
-                  <>
-                    <li>
-                      Current HVSMR
-                      segmentation does
-                      not contain a dedicated
-                      myocardium class.
-                    </li>
-
-                    <li>
-                      Myocardial wall
-                      thickness is therefore
-                      not calculated.
-                    </li>
-
-                    <li>
-                      Abnormality analysis
-                      is morphological
-                      screening and not a
-                      clinical diagnosis.
-                    </li>
-                  </>
-
-                )}
-
-              </ul>
 
             </section>
 
@@ -1803,6 +1807,7 @@ const heartModels =
       <footer className="site-footer">
 
         <div>
+
           <strong>
             Digital 3D Heart
           </strong>
@@ -1811,6 +1816,7 @@ const heartModels =
             Patient-specific cardiac
             structure modelling and analysis
           </span>
+
         </div>
 
         <div>
