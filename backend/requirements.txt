@@ -6,4 +6,6 @@ nibabel
 torch
 scikit-image
 trimesh
-pyglet<2scikit-learn
+pyglet<2
+scikit-learn
+
