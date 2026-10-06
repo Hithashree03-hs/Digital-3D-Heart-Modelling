@@ -9,7 +9,7 @@ import Heart3DViewer from "./Heart3DViewer";
 import "./App.css";
 import "./digitalHeartTheme.css";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://digital-3d-heart-modelling.onrender.com";
 
 const STRUCTURE_NAMES = [
   "Left Ventricle",
@@ -418,7 +418,7 @@ export default function App() {
         "Failed to fetch"
       ) {
         setError(
-          "Failed to connect to the backend. Make sure the FastAPI server is running at http://127.0.0.1:8000."
+          "Failed to connect to the backend. Make sure the FastAPI server is running at https://digital-3d-heart-modelling.onrender.com."
         );
       } else {
         setError(

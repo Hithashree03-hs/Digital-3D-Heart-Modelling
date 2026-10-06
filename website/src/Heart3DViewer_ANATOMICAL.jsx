@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-const BACKEND = "http://127.0.0.1:8000";
+const BACKEND = "https://digital-3d-heart-modelling.onrender.com";
 
 const STRUCTURE_COLORS = {
   "Left Ventricle": 0xff3030,
