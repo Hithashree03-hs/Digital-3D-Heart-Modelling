@@ -1071,6 +1071,191 @@ tr:last-child td {
   }
 }
 
+/* Refined landing page and dashboard spacing */
+.site-header {
+  min-height: 88px;
+  padding: 16px max(24px, calc((100vw - 1240px) / 2));
+  background: rgba(255, 255, 255, .88);
+}
+
+.header-left p {
+  font-size: 14px;
+}
+
+.app > main {
+  width: min(1240px, calc(100% - 48px)) !important;
+  margin: 0 auto !important;
+}
+
+.dh-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 330px;
+  place-items: center;
+  margin: 32px 0 22px;
+  padding: 50px 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .9);
+  border-radius: 28px;
+  background: linear-gradient(120deg, #f0efff 0%, #f9faff 48%, #e9faff 100%);
+  box-shadow: 0 22px 60px rgba(58, 66, 130, .09);
+  text-align: center;
+}
+
+.dh-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+}
+
+.dh-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  border: 1px solid rgba(99, 91, 255, .12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .7);
+  color: #5b55c8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .13em;
+}
+
+.dh-title {
+  margin: 20px 0 10px;
+  color: #17233b;
+  font-size: clamp(42px, 6vw, 68px);
+  font-weight: 800;
+  letter-spacing: -.065em;
+  line-height: 1;
+}
+
+.dh-title span {
+  color: #635bff;
+}
+
+.dh-subtitle {
+  max-width: 620px;
+  margin: 0 auto;
+  color: #667085;
+  font-size: 17px;
+}
+
+.dh-hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 20px;
+}
+
+.dh-hero-pills span {
+  padding: 8px 12px;
+  border: 1px solid rgba(99, 91, 255, .1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .68);
+  color: #555c78;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.dh-hero-glow {
+  position: absolute;
+  z-index: -1;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.dh-hero-glow-one {
+  top: -190px;
+  left: 8%;
+  background: rgba(147, 119, 255, .22);
+}
+
+.dh-hero-glow-two {
+  right: 4%;
+  bottom: -220px;
+  background: rgba(65, 202, 226, .2);
+}
+
+.upload-section {
+  min-height: 0;
+  max-width: 100%;
+  margin: 0 auto 38px;
+  padding: 28px;
+  border-radius: 26px;
+}
+
+.input-tabs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 680px;
+  margin: 0 auto 22px;
+}
+
+.upload-box {
+  min-height: 270px;
+  border-radius: 22px;
+}
+
+.selected-files,
+.error-message {
+  margin-top: 16px;
+}
+
+.analyze-button {
+  margin-top: 18px;
+}
+
+.content-section,
+.septal-defect-section,
+.abnormality-section,
+.heart-section {
+  margin: 34px 0;
+  padding: 36px;
+  border: 1px solid rgba(255, 255, 255, .82);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, .62);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 760px) {
+  .app > main {
+    width: min(100% - 24px, 680px) !important;
+  }
+
+  .dh-hero {
+    min-height: 290px;
+    margin-top: 18px;
+    padding: 36px 18px;
+    border-radius: 22px;
+  }
+
+  .dh-subtitle {
+    font-size: 15px;
+  }
+
+  .upload-section {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .input-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .content-section,
+  .septal-defect-section,
+  .abnormality-section,
+  .heart-section {
+    padding: 24px 18px;
+  }
+}
+
 /* =========================================================
    FRONT PAGE — PREMIUM MRI LANDING / UPLOAD EXPERIENCE
    ========================================================= */
@@ -1715,6 +1900,58 @@ body {
   .pipeline-card {
     min-height: 145px;
   }
+}
+
+/* Final landing page polish (kept last to win over legacy theme rules). */
+.app > main {
+  width: min(1240px, calc(100% - 48px)) !important;
+  margin: 0 auto !important;
+}
+
+.site-header {
+  min-height: 88px;
+  padding: 16px max(24px, calc((100vw - 1240px) / 2));
+}
+
+.dh-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 330px;
+  place-items: center;
+  margin: 32px 0 22px;
+  padding: 50px 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 28px;
+  background: linear-gradient(120deg,#f0efff 0%,#f9faff 48%,#e9faff 100%);
+  box-shadow: 0 22px 60px rgba(58,66,130,.09);
+  text-align: center;
+}
+
+.dh-hero-content { position: relative; z-index: 1; max-width: 760px; }
+.dh-eyebrow { display: inline-flex; align-items: center; gap: 9px; padding: 9px 13px; border: 1px solid rgba(99,91,255,.12); border-radius: 999px; background: rgba(255,255,255,.7); color: #5b55c8; font-size: 11px; font-weight: 800; letter-spacing: .13em; }
+.dh-title { margin: 20px 0 10px; color: #17233b; font-size: clamp(42px,6vw,68px); font-weight: 800; letter-spacing: -.065em; line-height: 1; }
+.dh-title span { color: #635bff; }
+.dh-subtitle { max-width: 620px; margin: 0 auto; color: #667085; font-size: 17px; }
+.dh-hero-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; margin-top: 20px; }
+.dh-hero-pills span { padding: 8px 12px; border: 1px solid rgba(99,91,255,.1); border-radius: 999px; background: rgba(255,255,255,.68); color: #555c78; font-size: 12px; font-weight: 650; }
+.dh-hero-glow { position: absolute; z-index: -1; width: 300px; height: 300px; border-radius: 50%; pointer-events: none; }
+.dh-hero-glow-one { top: -190px; left: 8%; background: rgba(147,119,255,.22); }
+.dh-hero-glow-two { right: 4%; bottom: -220px; background: rgba(65,202,226,.2); }
+.upload-section { min-height: 0; max-width: 100%; margin: 0 auto 38px; padding: 28px; border-radius: 26px; }
+.input-tabs { grid-template-columns: repeat(2,minmax(0,1fr)); max-width: 680px; margin: 0 auto 22px; }
+.upload-box { min-height: 270px; border-radius: 22px; }
+.analyze-button { margin-top: 18px; }
+.content-section,.septal-defect-section,.abnormality-section,.heart-section { margin: 34px 0; padding: 36px; border: 1px solid rgba(255,255,255,.82); border-radius: 26px; background: rgba(255,255,255,.62); box-shadow: var(--shadow-sm); }
+
+@media (max-width: 760px) {
+  .app > main { width: min(100% - 24px,680px) !important; }
+  .dh-hero { min-height: 290px; margin-top: 18px; padding: 36px 18px; border-radius: 22px; }
+  .dh-subtitle { font-size: 15px; }
+  .upload-section { padding: 18px; border-radius: 22px; }
+  .input-tabs { grid-template-columns: 1fr; }
+  .content-section,.septal-defect-section,.abnormality-section,.heart-section { padding: 24px 18px; }
 }
 /* =========================================================
    FINAL FULL-WIDTH PAGE FIX

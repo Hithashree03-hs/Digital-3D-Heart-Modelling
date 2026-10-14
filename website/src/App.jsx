@@ -9,7 +9,9 @@ import Heart3DViewer from "./Heart3DViewer";
 import "./App.css";
 import "./digitalHeartTheme.css";
 
-const API_BASE = "https://digital-3d-heart-modelling.onrender.com";
+const API_BASE = (
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
+).replace(/\/$/, "");
 
 const STRUCTURE_NAMES = [
   "Left Ventricle",
@@ -418,7 +420,7 @@ export default function App() {
         "Failed to fetch"
       ) {
         setError(
-          "Failed to connect to the backend. Make sure the FastAPI server is running at https://digital-3d-heart-modelling.onrender.com."
+          `Failed to connect to the backend at ${API_BASE}. Make sure the FastAPI server is running.`
         );
       } else {
         setError(
@@ -852,27 +854,6 @@ export default function App() {
               <span>Defect Screening</span>
             </div>
           </div>
-        </section>
-
-<section className="hero-section">
-
-          <div className="section-number">
-            01
-          </div>
-
-          <h2>
-            Transform cardiac MRI into a
-            patient-specific 3D heart model
-          </h2>
-
-          <p>
-            Upload a cardiac MRI volume
-            or individual MRI slices to
-            perform segmentation,
-            3D reconstruction and
-            cardiac morphological analysis.
-          </p>
-
         </section>
 
         <section className="upload-section">

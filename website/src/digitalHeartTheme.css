@@ -47,6 +47,182 @@ body {
   color: #172033;
 }
 
+/* High contrast atmospheric canvas behind the light clinical panels */
+body {
+  min-height: 100vh;
+  background-color: #090e25;
+  background-image:
+    radial-gradient(ellipse 48% 36% at 12% 18%, rgba(103, 72, 255, .74), transparent 100%),
+    radial-gradient(ellipse 40% 34% at 89% 13%, rgba(0, 195, 210, .48), transparent 100%),
+    radial-gradient(ellipse 44% 38% at 92% 79%, rgba(221, 47, 151, .38), transparent 100%),
+    radial-gradient(ellipse 42% 35% at 8% 83%, rgba(32, 154, 184, .38), transparent 100%),
+    radial-gradient(ellipse 70% 58% at 50% 48%, rgba(44, 48, 113, .7), transparent 100%),
+    linear-gradient(135deg, #090e25 0%, #151337 48%, #081b2c 100%);
+  background-attachment: fixed;
+}
+
+body::before {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,.42) 1px, transparent 1.6px),
+    linear-gradient(rgba(154,169,255,.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(154,169,255,.055) 1px, transparent 1px);
+  background-size: 79px 79px, 48px 48px, 48px 48px;
+  background-position: 0 0, center center, center center;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.8), transparent 88%);
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  background: transparent !important;
+}
+
+.site-header {
+  background: rgba(248, 249, 255, .94) !important;
+  box-shadow: 0 12px 38px rgba(2, 6, 23, .22);
+}
+
+.dh-hero {
+  border-color: rgba(255,255,255,.72);
+  box-shadow: 0 28px 80px rgba(1, 5, 22, .34), 0 0 46px rgba(125, 93, 255, .14);
+}
+
+.upload-section,
+.content-section,
+.septal-defect-section,
+.abnormality-section,
+.heart-section {
+  box-shadow: 0 30px 82px rgba(1, 5, 22, .3), 0 0 36px rgba(92, 137, 255, .11);
+}
+
+/* Distinct, editorial treatment for the completed analysis dashboard */
+.results {
+  padding: 18px clamp(16px, 3.5vw, 48px) 46px !important;
+  border: 1px solid rgba(255,255,255,.84) !important;
+  border-radius: 32px !important;
+  background:
+    radial-gradient(ellipse at 5% 18%, rgba(123,105,255,.12), transparent 28%),
+    radial-gradient(ellipse at 96% 54%, rgba(31,188,207,.10), transparent 28%),
+    linear-gradient(145deg, rgba(250,251,255,.98), rgba(241,244,255,.96)) !important;
+  box-shadow: 0 34px 100px rgba(1,6,24,.34), 0 0 0 1px rgba(126,145,255,.12) !important;
+}
+
+.complete-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 -2.5% 18px !important;
+  padding: 14px 20px !important;
+  border: 1px solid rgba(18,183,106,.16) !important;
+  border-radius: 16px;
+  background: linear-gradient(100deg, #e8fff4, #effcff 65%, #f3f0ff) !important;
+  color: #087443 !important;
+  letter-spacing: .12em;
+  font-size: 11px !important;
+}
+
+.complete-banner::before {
+  content: "✓";
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 50%;
+  background: #10b981;
+  color: white;
+  letter-spacing: 0;
+  box-shadow: 0 4px 12px rgba(16,185,129,.28);
+}
+
+.patient-header {
+  margin: 0 -2.5% 22px !important;
+  padding: 54px 28px 42px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(111,80,255,.54), transparent 34%),
+    radial-gradient(circle at 88% 90%, rgba(0,197,211,.28), transparent 32%),
+    linear-gradient(120deg, #111630, #19183d 56%, #102536) !important;
+  box-shadow: 0 22px 52px rgba(14,18,55,.24), inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+.patient-header h1,
+.patient-header h2 {
+  background: linear-gradient(100deg, #fff 12%, #d9d8ff 54%, #9ceaf0 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+.patient-header p { color: rgba(238,241,255,.76) !important; }
+.patient-header strong { color: #b8f3f0 !important; }
+.patient-header::before { background: rgba(255,255,255,.10) !important; border-color: rgba(255,255,255,.16) !important; color: #d8dcff !important; }
+.patient-header::after { opacity: 1 !important; }
+
+.results > .content-section,
+.results > .septal-defect-section,
+.results > .abnormality-section,
+.results > .heart-section {
+  position: relative;
+  margin: 20px 0 !important;
+  padding: 34px clamp(20px, 3vw, 38px) !important;
+  overflow: hidden;
+  border: 1px solid rgba(112,127,205,.13) !important;
+  border-radius: 24px !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.97), rgba(246,248,255,.94)) !important;
+  box-shadow: 0 13px 36px rgba(31,43,97,.075), inset 0 1px 0 white !important;
+}
+
+.results > .content-section::after,
+.results > .septal-defect-section::after,
+.results > .abnormality-section::after,
+.results > .heart-section::after {
+  position: absolute;
+  top: 28px;
+  bottom: 28px;
+  left: 0;
+  width: 4px;
+  border-radius: 0 8px 8px 0;
+  background: linear-gradient(180deg, #6559f5, #a14bea 55%, #23c5cf);
+  content: "";
+}
+
+.results > .content-section h2,
+.results > .septal-defect-section h2,
+.results > .abnormality-section h2,
+.results > .heart-section h2 {
+  margin-bottom: 8px;
+  font-size: clamp(26px, 3vw, 36px) !important;
+}
+
+.results .pipeline-card { min-height: 160px; }
+.results .info-card,
+.results .comparison-card { min-height: 112px; }
+.results .info-card strong,
+.results .comparison-card strong { font-size: 20px; }
+.results .table-container { border-radius: 16px; box-shadow: 0 12px 30px rgba(35,46,100,.07); }
+.results .table-container th { background: linear-gradient(100deg, #eeefff, #eafaff); }
+.results .table-container tbody tr:nth-child(even) td { background: #f8f9ff; }
+.results .table-container tbody tr:hover td { background: #eeefff; }
+.results .overall-assessment { border-left: 4px solid #635bff; background: linear-gradient(100deg,#f1efff,#f4fbff) !important; }
+.results .heart-viewer-canvas { border-color: rgba(111,97,255,.48) !important; box-shadow: 0 24px 68px rgba(13,19,55,.27), 0 0 0 5px rgba(99,91,255,.07) !important; }
+
+@media (max-width: 760px) {
+  .results { padding: 12px 12px 24px !important; border-radius: 24px !important; }
+  .patient-header { margin-inline: 0 !important; padding: 44px 18px 30px !important; }
+  .patient-header::before { right: 14px; top: 12px; }
+  .results > .content-section,
+  .results > .septal-defect-section,
+  .results > .abnormality-section,
+  .results > .heart-section { padding: 25px 18px !important; border-radius: 20px !important; }
+}
+
 /* =========================================================
    MAIN APP BACKGROUND
    ========================================================= */
