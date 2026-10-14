@@ -10,7 +10,10 @@ import "./App.css";
 import "./digitalHeartTheme.css";
 
 const API_BASE = (
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.DEV
+    ? "http://127.0.0.1:8000"
+    : "https://digital-3d-heart-modelling.onrender.com")
 ).replace(/\/$/, "");
 
 const STRUCTURE_NAMES = [
@@ -311,6 +314,26 @@ export default function App() {
     setResult,
   ] = useState(null);
 
+  const [backendStatus, setBackendStatus] = useState("checking");
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch(`${API_BASE}/health`, { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error("Backend health check failed");
+        return response.json();
+      })
+      .then((data) => {
+        setBackendStatus(data.status === "healthy" ? "connected" : "unavailable");
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setBackendStatus("unavailable");
+      });
+
+    return () => controller.abort();
+  }, []);
+
   // ---------------------------------------------------------
   // FILE SELECTION
   // ---------------------------------------------------------
@@ -341,6 +364,13 @@ export default function App() {
       return;
     }
 
+    if (inputType === "slices") {
+      setError(
+        "MRI slice-image analysis is not implemented yet. Upload a 3D .nii or .nii.gz volume instead."
+      );
+      return;
+    }
+
     setLoading(true);
     setError("");
     setResult(null);
@@ -365,11 +395,16 @@ export default function App() {
           );
 
         if (!response.ok) {
-          const text =
-            await response.text();
+          const responseText = await response.text();
+          let message = responseText;
+          try {
+            message = JSON.parse(responseText).detail || responseText;
+          } catch {
+            // Keep plain-text errors as-is.
+          }
 
           throw new Error(
-            text ||
+            message ||
               `Backend error: ${response.status}`
           );
         }
@@ -398,11 +433,16 @@ export default function App() {
           );
 
         if (!response.ok) {
-          const text =
-            await response.text();
+          const responseText = await response.text();
+          let message = responseText;
+          try {
+            message = JSON.parse(responseText).detail || responseText;
+          } catch {
+            // Keep plain-text errors as-is.
+          }
 
           throw new Error(
-            text ||
+            message ||
               `Backend error: ${response.status}`
           );
         }
@@ -806,7 +846,7 @@ export default function App() {
 
         <div className="backend-status">
 
-          <span className="status-dot" />
+          <span className={`status-dot ${backendStatus}`} />
 
           <div>
             <span>
@@ -814,7 +854,11 @@ export default function App() {
             </span>
 
             <strong>
-              Connected
+              {backendStatus === "connected"
+                ? "Connected"
+                : backendStatus === "checking"
+                ? "Checking…"
+                : "Unavailable"}
             </strong>
           </div>
 
