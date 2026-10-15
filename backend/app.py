@@ -16,6 +16,7 @@ from fastapi import (
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from backend.pipeline import analyze_patient
@@ -34,6 +35,8 @@ OUTPUTS_DIR = BACKEND_DIR / "outputs"
 # Expected MRI files include:
 # pat0_cropped.nii.gz ... pat59_cropped.nii.gz
 PROJECT_ROOT = BACKEND_DIR.parent
+FRONTEND_DIST = PROJECT_ROOT / "website" / "dist"
+FRONTEND_INDEX = FRONTEND_DIST / "index.html"
 HVSMR_DATASET_DIR = (
     PROJECT_ROOT
     / "dataset"
@@ -65,6 +68,13 @@ app = FastAPI(
     ),
     version="2.0.0",
 )
+
+if FRONTEND_DIST.is_dir():
+    app.mount(
+        "/assets",
+        StaticFiles(directory=str(FRONTEND_DIST / "assets")),
+        name="frontend-assets",
+    )
 
 
 # ============================================================
@@ -118,16 +128,19 @@ ALLOWED_MODEL_EXTENSIONS = {
 
 
 # ============================================================
-# ROOT
+# ROOT - SERVE REACT/VITE FRONTEND
 # ============================================================
 
 @app.get("/")
 def root():
+    if FRONTEND_INDEX.is_file():
+        return FileResponse(str(FRONTEND_INDEX))
 
     return {
         "status": "running",
         "service": "Digital 3D Heart Analysis API",
         "version": "2.0.0",
+        "frontend": "Build not found",
     }
 
 
