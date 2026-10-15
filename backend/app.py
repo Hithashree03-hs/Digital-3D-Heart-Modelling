@@ -31,9 +31,7 @@ BACKEND_DIR = Path(__file__).resolve().parent
 UPLOADS_DIR = BACKEND_DIR / "uploads"
 OUTPUTS_DIR = BACKEND_DIR / "outputs"
 
-# Local HVSMR dataset used by the patient selector.
-# Expected MRI files include:
-# pat0_cropped.nii.gz ... pat59_cropped.nii.gz
+
 PROJECT_ROOT = BACKEND_DIR.parent
 HVSMR_DATASET_DIR = (
     PROJECT_ROOT
