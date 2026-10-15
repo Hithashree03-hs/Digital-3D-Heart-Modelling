@@ -28,6 +28,7 @@ Thumbs.db
 dataset/
 # Trained model checkpoints
 *.pth
+!backend/model/hvsmr_unet_split.pth
 
 # Generated test slices
 test_image_slices/
