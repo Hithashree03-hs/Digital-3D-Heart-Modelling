@@ -13,8 +13,13 @@ curl --fail --location --silent --show-error \
   "https://github.com/git-lfs/git-lfs/releases/download/${LFS_VERSION}/${LFS_ARCHIVE}" \
   --output "${TMP_DIR}/${LFS_ARCHIVE}"
 tar -xzf "${TMP_DIR}/${LFS_ARCHIVE}" -C "$TMP_DIR"
+LFS_BINARY="$(find "$TMP_DIR" -type f -name git-lfs -print -quit)"
+if [[ -z "$LFS_BINARY" ]]; then
+  echo "Could not find the Git LFS executable in ${LFS_ARCHIVE}" >&2
+  exit 1
+fi
 mkdir -p "$HOME/.local/bin"
-install "${TMP_DIR}/git-lfs" "$HOME/.local/bin/git-lfs"
+install "$LFS_BINARY" "$HOME/.local/bin/git-lfs"
 export PATH="$HOME/.local/bin:$PATH"
 
 git lfs install --local
