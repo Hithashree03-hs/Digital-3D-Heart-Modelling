@@ -157,6 +157,16 @@ def health():
     }
 
 
+@app.get("/debug-frontend")
+def debug_frontend():
+    return {
+        "frontend_dist": str(FRONTEND_DIST),
+        "frontend_dist_exists": FRONTEND_DIST.is_dir(),
+        "frontend_index": str(FRONTEND_INDEX),
+        "frontend_index_exists": FRONTEND_INDEX.is_file(),
+    }
+
+
 # ============================================================
 # SANITIZE PATIENT ID
 # ============================================================
